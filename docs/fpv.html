@@ -10,181 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/redesign.css">
-
-  <style>
-    /* ===== СЕТКА: ЛЕВО — КОНТЕНТ, ПРАВО — СЕРВО ===== */
-    .fpv-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 1.5rem;
-      align-items: start;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem;
-    }
-
-    /* Правая колонка «прилипает» при скролле и сливается с фоном */
-    .fpv-servo-panel {
-      position: sticky;
-      top: 1.5rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 1.25rem;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-    }
-
-    .fpv-servo-panel h3 {
-      margin: 0 0 .35rem;
-      font-size: 1.05rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      color: #e5e7eb;
-    }
-
-    .fpv-servo-panel .servo-desc {
-      margin: 0 0 1rem;
-      font-size: .82rem;
-      color: #9ca3af;
-      line-height: 1.45;
-    }
-
-    .fpv-servo-panel code {
-      background: rgba(255, 255, 255, 0.08);
-      color: #6ee7b7;
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: .78rem;
-    }
-
-    /* ===== ДЖОЙСТИК ===== */
-    .servo-joystick {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: .5rem;
-      max-width: 240px;
-      margin: 0 auto 1rem;
-      aspect-ratio: 1 / 1;
-    }
-
-    .servo-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: .15rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      color: #e5e7eb;
-      font-family: inherit;
-      font-size: 1.4rem;
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-      transition: background .15s, transform .1s, box-shadow .15s, border-color .15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .servo-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(110, 231, 183, 0.4);
-      box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
-    }
-
-    .servo-btn:active,
-    .servo-btn.is-active {
-      background: #10b981;
-      border-color: #10b981;
-      color: #fff;
-      transform: scale(.95);
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
-    }
-
-    .servo-btn .servo-label {
-      font-size: .6rem;
-      font-weight: 600;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-      opacity: .7;
-    }
-
-    .servo-up    { grid-area: 1 / 2 / 2 / 3; }
-    .servo-left  { grid-area: 2 / 1 / 3 / 2; }
-    .servo-stop  { grid-area: 2 / 2 / 3 / 3; font-size: 1rem; }
-    .servo-right { grid-area: 2 / 3 / 3 / 4; }
-    .servo-down  { grid-area: 3 / 2 / 4 / 3; }
-
-    /* Центральная кнопка «стоп» */
-    .servo-stop {
-      background: rgba(239, 68, 68, 0.12);
-      color: #fca5a5;
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-    .servo-stop:hover {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: rgba(239, 68, 68, 0.5);
-    }
-    .servo-stop:active,
-    .servo-stop.is-active {
-      background: #ef4444;
-      border-color: #ef4444;
-      color: #fff;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
-    }
-
-    /* ===== ПРЕСЕТЫ ===== */
-    .servo-presets {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: .4rem;
-      margin-top: .75rem;
-    }
-
-    .servo-preset {
-      padding: .45rem .25rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      color: #d1d5db;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .72rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s, border-color .15s, color .15s;
-    }
-
-    .servo-preset:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(110, 231, 183, 0.4);
-      color: #6ee7b7;
-    }
-
-    .servo-preset:active {
-      background: #10b981;
-      border-color: #10b981;
-      color: #fff;
-    }
-
-    /* ===== АДАПТИВ ===== */
-    @media (max-width: 900px) {
-      .fpv-layout {
-        grid-template-columns: 1fr;
-        padding: 1rem;
-      }
-      .fpv-servo-panel {
-        position: static;
-        order: -1;
-      }
-      .servo-joystick {
-        max-width: 200px;
-      }
-    }
-  </style>
 </head>
 <body class="fpv-page">
 
@@ -200,201 +25,158 @@
     </div>
   </header>
 
-  <!-- ============================================================ -->
-  <!-- ДВУХКОЛОНОЧНЫЙ МАКЕТ                                          -->
-  <!-- ============================================================ -->
-  <div class="fpv-layout">
+  <main class="fpv-main">
 
-    <!-- ===================== ЛЕВАЯ КОЛОНКА ===================== -->
-    <main class="fpv-main">
+    <h1>📹 FPV-зрение для экологических роботов</h1>
+    <p class="lead">
+      Программный продукт на базе <strong>ESP32-S3 + Wi-Fi</strong>:
+      прямая трансляция, управление серво и интеграция с базой данных.
+      Работает в браузере, без сторонних приложений.
+    </p>
 
-      <h1>📹 FPV-зрение для экологических роботов</h1>
-      <p class="lead">
-        Программный продукт на базе <strong>ESP32-S3 + Wi-Fi</strong>:
-        прямая трансляция, управление серво и интеграция с базой данных.
-        Работает в браузере, без сторонних приложений.
-      </p>
+    <!-- ТАБЫ -->
+    <div class="fpv-tabs" role="tablist">
+      <button class="fpv-tab active" data-tab="live" role="tab">📡 Живая камера</button>
+      <button class="fpv-tab" data-tab="connect" role="tab">🔌 Как подключиться</button>
+      <button class="fpv-tab" data-tab="demo" role="tab">🎬 Демо FPV-зрения</button>
+    </div>
 
-      <!-- ТАБЫ -->
-      <div class="fpv-tabs" role="tablist">
-        <button class="fpv-tab active" data-tab="live" role="tab">📡 Живая камера</button>
-        <button class="fpv-tab" data-tab="connect" role="tab">🔌 Как подключиться</button>
-        <button class="fpv-tab" data-tab="demo" role="tab">🎬 Демо FPV-зрения</button>
-      </div>
+    <!-- ============================================================ -->
+    <!-- ВКЛАДКА 1: ЖИВАЯ КАМЕРА                                       -->
+    <!-- ============================================================ -->
+    <div class="fpv-tab-content" id="tab-live">
 
-      <!-- ВКЛАДКА 1: ЖИВАЯ КАМЕРА -->
-      <div class="fpv-tab-content" id="tab-live">
+      <div class="fpv-launch-card">
+        <div class="fpv-launch-icon"></div>
+        <h2>Прямой эфир</h2>
+        <p class="fpv-launch-desc">
+          FPV-поток с ESP32-S3. Работает <strong>только в локальной сети</strong>
+          <code>RGB_Route</code> — это ограничение железа, а не программы.
+        </p>
 
-        <div class="fpv-launch-card">
-          <div class="fpv-launch-icon"></div>
-          <h2>Прямой эфир</h2>
-          <p class="fpv-launch-desc">
-            FPV-поток с ESP32-S3. Работает <strong>только в локальной сети</strong>
-            <code>RGB_Route</code> — это ограничение железа, а не программы.
-          </p>
-
-          <div class="fpv-launch-actions">
-            <a href="http://192.168.100.7" target="_blank" class="btn btn-primary btn-lg">
-              📹 Открыть камеру
-            </a>
-            <button type="button" class="btn btn-ghost" id="toggle-instruction">
-              ❓ Как подключиться?
-            </button>
-          </div>
-
-          <div class="fpv-launch-instruction" id="fpv-instruction" hidden>
-            <h4>📱 Что нужно</h4>
-            <ol>
-              <li>
-                Подключитесь к Wi-Fi <strong>RGB_Route</strong>
-                <span class="hint-badge">2.4 ГГц</span>
-              </li>
-              <li>
-                Пароль:
-                <code>1234567890</code>
-                <button type="button" class="copy-btn" data-copy="1234567890" title="Скопировать">📋</button>
-              </li>
-              <li>Откройте в браузере <code>192.168.100.7</code> — увидите прямой эфир.</li>
-            </ol>
-            <p class="fpv-tip">
-              💡 Если камера не открывается — проверьте, что вы в сети <strong>RGB_Route</strong>,
-              и обновите страницу.
-            </p>
-          </div>
-        </div>
-
-        <!-- Панель быстрых действий — ТОЛЬКО ДЛЯ АДМИНА -->
-        <div class="fpv-quick-actions" id="admin-actions" style="display:none;">
-          <a href="http://192.168.100.7/capture" target="_blank" class="btn">
-            📸 Сделать снимок
+        <div class="fpv-launch-actions">
+          <a href="http://192.168.100.7" target="_blank" class="btn btn-primary btn-lg">
+            📹 Открыть камеру
           </a>
-          <a href="http://192.168.100.7:81/status" target="_blank" class="btn">
-            📊 Статус камеры
-          </a>
+          <button type="button" class="btn btn-ghost" id="toggle-instruction">
+            ❓ Как подключиться?
+          </button>
         </div>
 
-        <div class="project-block">
-          <div class="project-block-header">
-            <div class="project-block-icon">🧠</div>
-            <div><h3>Что даёт FPV-зрение</h3></div>
-          </div>
-          <ul class="about-list">
-            <li>👁️ Взгляд изнутри — там, где человек не поместится</li>
-            <li>⚡ Реакция в реальном времени — без задержек</li>
-            <li>🎛️ Управление серво — поворот камеры из браузера</li>
-            <li>🗄️ Интеграция с БД — данные и видео в одном интерфейсе</li>
-            <li>💰 Дешевле аналогов — ESP32-S3 вместо IP-камеры</li>
-          </ul>
-        </div>
-
-      </div>
-
-      <!-- ВКЛАДКА 2: КАК ПОДКЛЮЧИТЬСЯ -->
-      <div class="fpv-tab-content" id="tab-connect" hidden>
-
-        <div class="fpv-launch-card">
-          <div class="fpv-launch-icon"></div>
-          <h2>Подключение к камере</h2>
-          <p class="fpv-launch-desc">
-            Пошаговая демонстрация: от Wi-Fi до живой картинки в браузере.
+        <div class="fpv-launch-instruction" id="fpv-instruction" hidden>
+          <h4>📱 Что нужно</h4>
+          <ol>
+            <li>
+              Подключитесь к Wi-Fi <strong>RGB_Route</strong>
+              <span class="hint-badge">2.4 ГГц</span>
+            </li>
+            <li>
+              Пароль:
+              <code>1234567890</code>
+              <button type="button" class="copy-btn" data-copy="1234567890" title="Скопировать">📋</button>
+            </li>
+            <li>Откройте в браузере <code>192.168.100.7</code> — увидите прямой эфир.</li>
+          </ol>
+          <p class="fpv-tip">
+            💡 Если камера не открывается — проверьте, что вы в сети <strong>RGB_Route</strong>,
+            и обновите страницу.
           </p>
-
-          <video controls preload="metadata" playsinline
-                 style="width:100%; border-radius:12px; margin-top:1rem; background:#000;">
-            <source src="videos/fpv-connect.mp4" type="video/mp4">
-            Ваш браузер не поддерживает видео.
-          </video>
-
-          <div class="fpv-launch-instruction" style="margin-top:1.25rem;">
-            <h4>📱 Что нужно</h4>
-            <ol>
-              <li>Подключитесь к Wi-Fi <strong>RGB_Route</strong> <span class="hint-badge">2.4 ГГц</span></li>
-              <li>Пароль: <code>1234567890</code></li>
-              <li>Откройте <code>192.168.100.7</code> в браузере</li>
-              <li>Управляйте камерой и снимайте кадры</li>
-            </ol>
-          </div>
         </div>
-
       </div>
 
-      <!-- ВКЛАДКА 3: ДЕМО FPV-ЗРЕНИЯ -->
-      <div class="fpv-tab-content" id="tab-demo" hidden>
-
-        <div class="fpv-launch-card">
-          <div class="fpv-launch-icon"></div>
-          <h2>FPV-зрение в работе</h2>
-          <p class="fpv-launch-desc">
-            Как камера помогает контролировать процесс работы агрегата
-            в реальном времени со стороны (в начальной версии).
-          </p>
-
-          <video controls preload="metadata" playsinline
-                 style="width:100%; border-radius:12px; margin-top:1rem; background:#000;">
-            <source src="videos/fpv-process.mp4" type="video/mp4">
-            Ваш браузер не поддерживает видео.
-          </video>
-        </div>
-
-        <div class="project-block">
-          <div class="project-block-header">
-            <div class="project-block-icon">📋</div>
-            <div><h3>Что показывает запись</h3></div>
-          </div>
-          <ul class="about-list">
-            <li>👁️ Взгляд изнутри агрегата — недоступен человеку</li>
-            <li>🔥 Контроль нагрева и экструзии в реальном времени</li>
-            <li>🎛️ Управление серво — поворот камеры под нужным углом</li>
-            <li>🗄️ Связка «видео + данные» в одном интерфейсе</li>
-          </ul>
-        </div>
-
+      <!-- Панель быстрых действий — ТОЛЬКО ДЛЯ АДМИНА -->
+      <div class="fpv-quick-actions" id="admin-actions" style="display:none;">
+        <a href="http://192.168.100.7/capture" target="_blank" class="btn">
+          📸 Сделать снимок
+        </a>
+        <a href="http://192.168.100.7:81/status" target="_blank" class="btn">
+          📊 Статус камеры
+        </a>
       </div>
 
-    </main>
-
-    <!-- ===================== ПРАВАЯ КОЛОНКА: СЕРВО ===================== -->
-    <aside class="fpv-servo-panel" aria-label="Управление серво">
-      <h3>🎛️ Управление серво</h3>
-      <p class="servo-desc">
-        Поворот камеры по горизонтали и вертикали.
-        Работает только при подключении к сети <code>RGB_Route</code>.
-      </p>
-
-      <!-- Джойстик 3×3 -->
-      <div class="servo-joystick" role="group" aria-label="Джойстик управления серво">
-
-        <button type="button" class="servo-btn servo-up"
-                data-dir="up" aria-label="Вверх">
-          ▲<span class="servo-label">Вверх</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-left"
-                data-dir="left" aria-label="Влево">
-          ◀<span class="servo-label">Влево</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-stop"
-                data-dir="stop" aria-label="Стоп">
-          ⏹<span class="servo-label">Стоп</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-right"
-                data-dir="right" aria-label="Вправо">
-          ▶<span class="servo-label">Вправо</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-down"
-                data-dir="down" aria-label="Вниз">
-          ▼<span class="servo-label">Вниз</span>
-        </button>
-
+      <div class="project-block">
+        <div class="project-block-header">
+          <div class="project-block-icon">🧠</div>
+          <div><h3>Что даёт FPV-зрение</h3></div>
+        </div>
+        <ul class="about-list">
+          <li>👁️ Взгляд изнутри — там, где человек не поместится</li>
+          <li>⚡ Реакция в реальном времени — без задержек</li>
+          <li>🎛️ Управление серво — поворот камеры из браузера</li>
+          <li>🗄️ Интеграция с БД — данные и видео в одном интерфейсе</li>
+          <li>💰 Дешевле аналогов — ESP32-S3 вместо IP-камеры</li>
+        </ul>
       </div>
 
-      
-    </aside>
+    </div>
 
-  </div>
+    <!-- ============================================================ -->
+    <!-- ВКЛАДКА 2: КАК ПОДКЛЮЧИТЬСЯ                                    -->
+    <!-- ============================================================ -->
+    <div class="fpv-tab-content" id="tab-connect" hidden>
+
+      <div class="fpv-launch-card">
+        <div class="fpv-launch-icon"></div>
+        <h2>Подключение к камере</h2>
+        <p class="fpv-launch-desc">
+          Пошаговая демонстрация: от Wi-Fi до живой картинки в браузере.
+        </p>
+
+        <video controls preload="metadata" playsinline
+               style="width:100%; border-radius:12px; margin-top:1rem; background:#000;">
+          <source src="videos/fpv-connect.mp4" type="video/mp4">
+          Ваш браузер не поддерживает видео.
+        </video>
+
+        <div class="fpv-launch-instruction" style="margin-top:1.25rem;">
+          <h4>📱 Что нужно</h4>
+          <ol>
+            <li>Подключитесь к Wi-Fi <strong>RGB_Route</strong> <span class="hint-badge">2.4 ГГц</span></li>
+            <li>Пароль: <code>1234567890</code></li>
+            <li>Откройте <code>192.168.100.7</code> в браузере</li>
+            <li>Управляйте камерой и снимайте кадры</li>
+          </ol>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ВКЛАДКА 3: ДЕМО FPV-ЗРЕНИЯ                                     -->
+    <!-- ============================================================ -->
+    <div class="fpv-tab-content" id="tab-demo" hidden>
+
+      <div class="fpv-launch-card">
+        <div class="fpv-launch-icon"></div>
+        <h2>FPV-зрение в работе</h2>
+        <p class="fpv-launch-desc">
+          Как камера помогает контролировать процесс работы агрегата
+          в реальном времени со стороны (в начальной версии).
+        </p>
+
+        <video controls preload="metadata" playsinline
+               style="width:100%; border-radius:12px; margin-top:1rem; background:#000;">
+          <source src="videos/fpv-process.mp4" type="video/mp4">
+          Ваш браузер не поддерживает видео.
+        </video>
+      </div>
+
+      <div class="project-block">
+        <div class="project-block-header">
+          <div class="project-block-icon">📋</div>
+          <div><h3>Что показывает запись</h3></div>
+        </div>
+        <ul class="about-list">
+          <li>👁️ Взгляд изнутри агрегата — недоступен человеку</li>
+          <li>🔥 Контроль нагрева и экструзии в реальном времени</li>
+          <li>🎛️ Управление серво — поворот камеры под нужным углом</li>
+          <li>🗄️ Связка «видео + данные» в одном интерфейсе</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
@@ -457,6 +239,7 @@
       var adminActions = document.getElementById('admin-actions');
 
       if (isRealAdmin) {
+        // === АДМИН ===
         if (roleEl) roleEl.textContent = '👑 ' + admin.email;
         document.body.classList.remove('is-guest');
         document.body.classList.add('is-admin');
@@ -471,6 +254,7 @@
         if (adminActions) adminActions.style.display = 'flex';
 
       } else {
+        // === ГОСТЬ ===
         if (roleEl) roleEl.textContent = '👀 Гость (только просмотр)';
         document.body.classList.remove('is-admin');
         document.body.classList.add('is-guest');
@@ -478,92 +262,6 @@
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (adminActions) adminActions.style.display = 'none';
       }
-    })();
-
-    // ============================================================
-    // УПРАВЛЕНИЕ СЕРВО
-    // ============================================================
-    (function() {
-      var ESP32_BASE = 'http://192.168.100.7';   // адрес ESP32-S3
-
-      var state = {
-        horizontal: 90,   // 0..180
-        vertical:   90    // 0..180
-      };
-
-      // ---- Отправка команды на ESP32 ----
-      // Ожидаемый эндпоинт на прошивке:
-      //   /servo?h=90&v=90   → устанавливает углы
-      //   /servo?dir=up      → шаг вверх
-      //   /servo?dir=stop    → остановка
-      function sendServoCommand(params) {
-        var url = ESP32_BASE + '/servo?' + new URLSearchParams(params).toString();
-
-        var controller = new AbortController();
-        var timer = setTimeout(function() { controller.abort(); }, 1500);
-
-        return fetch(url, { mode: 'no-cors', signal: controller.signal })
-          .then(function() { clearTimeout(timer); return true; })
-          .catch(function() { clearTimeout(timer); return false; });
-      }
-
-      // ---- Обработка кнопок-джойстика ----
-      document.querySelectorAll('.servo-btn').forEach(function(btn) {
-        var dir = btn.dataset.dir;
-
-        function press(e) {
-          e.preventDefault();
-          btn.classList.add('is-active');
-
-          if (dir === 'stop') {
-            sendServoCommand({ dir: 'stop' });
-            return;
-          }
-
-          var step = 10;
-          if (dir === 'left')  state.horizontal = Math.max(0,   state.horizontal - step);
-          if (dir === 'right') state.horizontal = Math.min(180, state.horizontal + step);
-          if (dir === 'up')    state.vertical   = Math.min(180, state.vertical   + step);
-          if (dir === 'down')  state.vertical   = Math.max(0,   state.vertical   - step);
-
-          sendServoCommand({ h: state.horizontal, v: state.vertical });
-        }
-
-        function release() {
-          btn.classList.remove('is-active');
-        }
-
-        btn.addEventListener('mousedown', press);
-        btn.addEventListener('mouseup', release);
-        btn.addEventListener('mouseleave', release);
-        btn.addEventListener('touchstart', press, { passive: false });
-        btn.addEventListener('touchend', release);
-        btn.addEventListener('touchcancel', release);
-      });
-
-      // ---- Пресеты углов ----
-      document.querySelectorAll('.servo-preset').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var val = btn.dataset.angle;
-          if (val === 'center') {
-            state.horizontal = 90;
-            state.vertical   = 90;
-          } else {
-            state.horizontal = parseInt(val, 10);
-          }
-          sendServoCommand({ h: state.horizontal, v: state.vertical });
-        });
-      });
-
-      // Экспорт в глобальную область — чтобы можно было вызвать из консоли
-      window.ServoControl = {
-        set: function(h, v) {
-          state.horizontal = Math.min(180, Math.max(0, h));
-          state.vertical   = Math.min(180, Math.max(0, v));
-          return sendServoCommand({ h: state.horizontal, v: state.vertical });
-        },
-        state: state
-      };
     })();
   </script>
 
