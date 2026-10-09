@@ -1,635 +1,274 @@
-<!DOCTYPE html>
+// html.h — HTML + CSS
+#pragma once
+#include <Arduino.h>
+
+const char INDEX_HTML[] PROGMEM = R"CAMHTML(<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FPV-зрение · GreenLoop</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📹</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/redesign.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32-S3 FPV</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: rgb(17,17,17); color: rgb(238,238,238);
+         font-family: -apple-system, Roboto, sans-serif;
+         display: flex; flex-direction: column; gap: 12px;
+         padding: 12px; min-height: 100vh; }
 
-  <style>
-    /* ===== СЕТКА: ЛЕВО — КОНТЕНТ, ПРАВО — СЕРВО ===== */
-    .fpv-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 1.5rem;
-      align-items: start;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem;
-    }
+  header { width: 100%; display: flex;
+           justify-content: space-between; align-items: center;
+           background: rgb(28,28,28); padding: 10px 14px;
+           border-radius: 10px; font-size: 14px; flex: 0 0 auto; }
+  header .brand { font-weight: 600; color: rgb(68,170,255); }
+  header .rssi  { color: rgb(170,170,170); font-size: 13px; }
 
-    /* Правая колонка «прилипает» при скролле */
-    .fpv-servo-panel {
-      position: sticky;
-      top: 1.5rem;
-      background: var(--card-bg, #fff);
-      border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 16px;
-      padding: 1.25rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
-    }
+  /* ===== Главный блок: слева видео, справа серво ===== */
+  .main {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr;    /* видео 2 части, серво 1 часть */
+    gap: 12px;
+    min-height: 0;
+  }
 
-    .fpv-servo-panel h3 {
-      margin: 0 0 .35rem;
-      font-size: 1.05rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-    }
+  /* Видео-панель */
+  .video-panel {
+    background: rgb(28,28,28);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: 0;
+  }
+  .video-title { font-size: 13px; color: rgb(68,170,255);
+                 font-weight: 600; }
+  .video-wrap {
+    flex: 1 1 auto; min-height: 0;
+    background: black; border-radius: 10px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  .video-status { display: flex; gap: 16px; font-size: 13px;
+                  color: rgb(170,170,170); }
+  .video-status .val { color: rgb(68,170,255); font-weight: 600; }
 
-    .fpv-servo-panel .servo-desc {
-      margin: 0 0 1rem;
-      font-size: .82rem;
-      color: var(--text-muted, #6b7280);
-      line-height: 1.4;
-    }
+  /* Серво-панель */
+  .servo-panel {
+    background: rgb(28,28,28);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 14px;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .servo-title { font-size: 13px; color: rgb(68,170,255);
+                 font-weight: 600; text-align: center; }
+  .servo-angle-big { font-size: 40px; font-weight: 800;
+                     font-family: monospace; color: rgb(68,170,255);
+                     line-height: 1; }
 
-    /* ===== ДЖОЙСТИК ===== */
-    .servo-joystick {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: .5rem;
-      max-width: 240px;
-      margin: 0 auto 1rem;
-      aspect-ratio: 1 / 1;
-    }
+  .joystick { display: grid;
+              grid-template-columns: 64px 64px 64px;
+              grid-template-rows:    64px 64px 64px;
+              gap: 6px; }
+  .joy-btn { width: 64px; height: 64px;
+             background: rgb(42,42,42);
+             border: 2px solid rgb(68,68,68);
+             color: rgb(238,238,238);
+             border-radius: 12px; font-size: 24px; font-weight: 700;
+             cursor: pointer;
+             display: flex; align-items: center; justify-content: center;
+             transition: background 0.1s, border-color 0.1s, transform 0.05s;
+             user-select: none; -webkit-user-select: none;
+             font-family: inherit;
+             touch-action: manipulation; }
+  .joy-btn:hover { background: rgb(58,58,58); border-color: rgb(68,170,255); }
+  .joy-btn:active,
+  .joy-btn.on   { background: rgb(68,170,255); color: rgb(0,0,0);
+                  transform: scale(0.94); }
+  .joy-up    { grid-column: 2; grid-row: 1; }
+  .joy-left  { grid-column: 1; grid-row: 2; }
+  .joy-right { grid-column: 3; grid-row: 2; }
+  .joy-down  { grid-column: 2; grid-row: 3; }
+  .joy-center { grid-column: 2; grid-row: 2;
+                background: rgb(20,20,20);
+                border-color: rgb(50,50,50);
+                font-size: 12px; color: rgb(120,120,120);
+                cursor: pointer; }
+  .joy-center:hover { background: rgb(30,30,30);
+                      border-color: rgb(68,170,255);
+                      color: rgb(68,170,255); }
+  .joy-center:active { background: rgb(68,170,255); color: rgb(0,0,0); }
 
-    .servo-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: .15rem;
-      border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 12px;
-      background: var(--btn-bg, #f9fafb);
-      color: var(--text-color, #111827);
-      font-family: inherit;
-      font-size: 1.4rem;
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-      transition: background .15s, transform .1s, box-shadow .15s;
-      -webkit-tap-highlight-color: transparent;
-    }
+  .joy-presets { display: flex; gap: 6px; flex-wrap: wrap;
+                 justify-content: center; }
+  .joy-preset { padding: 8px 14px; background: rgb(42,42,42);
+                border: 1px solid rgb(68,68,68); color: rgb(238,238,238);
+                border-radius: 8px; cursor: pointer; font-size: 13px;
+                font-family: inherit; touch-action: manipulation; }
+  .joy-preset:hover { background: rgb(58,58,58);
+                      border-color: rgb(68,170,255); }
+  .joy-preset:active { background: rgb(68,170,255); color: rgb(0,0,0); }
 
-    .servo-btn:hover {
-      background: var(--btn-hover, #f3f4f6);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
-    }
-
-    .servo-btn:active,
-    .servo-btn.is-active {
-      background: var(--accent, #10b981);
-      color: #fff;
-      transform: scale(.95);
-    }
-
-    .servo-btn:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .servo-btn .servo-label {
-      font-size: .6rem;
-      font-weight: 600;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-      opacity: .7;
-    }
-
-    /* Позиции в сетке 3×3 */
-    .servo-up    { grid-area: 1 / 2 / 2 / 3; }
-    .servo-left  { grid-area: 2 / 1 / 3 / 2; }
-    .servo-stop  { grid-area: 2 / 2 / 3 / 3; font-size: 1rem; }
-    .servo-right { grid-area: 2 / 3 / 3 / 4; }
-    .servo-down  { grid-area: 3 / 2 / 4 / 3; }
-
-    /* Центральная кнопка «стоп» — другого цвета */
-    .servo-stop {
-      background: #fee2e2;
-      color: #b91c1c;
-      border-color: #fecaca;
-    }
-    .servo-stop:hover {
-      background: #fecaca;
-    }
-    .servo-stop:active,
-    .servo-stop.is-active {
-      background: #ef4444;
-      color: #fff;
-    }
-
-    /* ===== СТАТУС И УГОЛ ===== */
-    .servo-status {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .5rem;
-      font-size: .8rem;
-      padding: .5rem .75rem;
-      border-radius: 10px;
-      background: var(--surface-2, #f3f4f6);
-      margin-bottom: .75rem;
-    }
-
-    .servo-status .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #9ca3af;
-      display: inline-block;
-      margin-right: .35rem;
-    }
-    .servo-status.online .dot { background: #10b981; }
-    .servo-status.offline .dot { background: #ef4444; }
-
-    .servo-angle {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: .95rem;
-    }
-
-    /* ===== ПРЕСЕТЫ ===== */
-    .servo-presets {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: .4rem;
-      margin-top: .75rem;
-    }
-
-    .servo-preset {
-      padding: .45rem .25rem;
-      border: 1px solid var(--border-color, #e5e7eb);
-      border-radius: 8px;
-      background: var(--btn-bg, #f9fafb);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .72rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .servo-preset:hover { background: var(--btn-hover, #f3f4f6); }
-    .servo-preset:active { background: var(--accent, #10b981); color: #fff; }
-
-    /* ===== АДАПТИВ ===== */
-    @media (max-width: 900px) {
-      .fpv-layout {
-        grid-template-columns: 1fr;
-        padding: 1rem;
-      }
-      .fpv-servo-panel {
-        position: static;
-        order: -1; /* на мобильных управление сверху */
-      }
-      .servo-joystick {
-        max-width: 200px;
-      }
-    }
-  </style>
+  /* Мобильный / узкий экран: видео сверху, серво снизу */
+  @media (max-width: 720px) {
+    .main { grid-template-columns: 1fr; }
+    .video-panel { min-height: 45vh; }
+    .servo-panel { min-height: auto; }
+  }
+</style>
 </head>
-<body class="fpv-page">
+<body>
 
-  <header class="topbar">
-    <a href="project-page.html" class="btn-back">← Назад</a>
-    <div class="brand">
-      <span class="logo-icon">📹</span>
-      <span>FPV-зрение · GreenLoop</span>
+<header>
+  <span class="brand">ESP32-S3 FPV</span>
+  <span class="rssi" id="rssi">— dBm</span>
+</header>
+
+<div class="main">
+
+  <!-- ЛЕВАЯ ПАНЕЛЬ: ВИДЕО -->
+  <div class="video-panel">
+    <div class="video-title">Камера</div>
+    <div class="video-wrap">
+      <img id="stream" src="http://192.168.4.1:81/stream" alt="FPV">
     </div>
-    <div class="topbar-actions">
-      <span id="user-role" class="role-badge">…</span>
-      <button id="logout-btn" class="btn-logout" style="display:none;">Выйти</button>
+    <div class="video-status">
+      <span>FPS: <span class="val" id="fps">—</span></span>
+      <span>PAN: <span class="val" id="angleBigVideo">90°</span></span>
     </div>
-  </header>
-
-  <!-- ============================================================ -->
-  <!-- ДВУХКОЛОНОЧНЫЙ МАКЕТ                                          -->
-  <!-- ============================================================ -->
-  <div class="fpv-layout">
-
-    <!-- ===================== ЛЕВАЯ КОЛОНКА ===================== -->
-    <main class="fpv-main">
-
-      <h1>📹 FPV-зрение для экологических роботов</h1>
-      <p class="lead">
-        Программный продукт на базе <strong>ESP32-S3 + Wi-Fi</strong>:
-        прямая трансляция, управление серво и интеграция с базой данных.
-        Работает в браузере, без сторонних приложений.
-      </p>
-
-      <!-- ТАБЫ -->
-      <div class="fpv-tabs" role="tablist">
-        <button class="fpv-tab active" data-tab="live" role="tab">📡 Живая камера</button>
-        <button class="fpv-tab" data-tab="connect" role="tab">🔌 Как подключиться</button>
-        <button class="fpv-tab" data-tab="demo" role="tab">🎬 Демо FPV-зрения</button>
-      </div>
-
-      <!-- ВКЛАДКА 1: ЖИВАЯ КАМЕРА -->
-      <div class="fpv-tab-content" id="tab-live">
-
-        <div class="fpv-launch-card">
-          <div class="fpv-launch-icon"></div>
-          <h2>Прямой эфир</h2>
-          <p class="fpv-launch-desc">
-            FPV-поток с ESP32-S3. Работает <strong>только в локальной сети</strong>
-            <code>RGB_Route</code> — это ограничение железа, а не программы.
-          </p>
-
-          <div class="fpv-launch-actions">
-            <a href="http://192.168.100.7" target="_blank" class="btn btn-primary btn-lg">
-              📹 Открыть камеру
-            </a>
-            <button type="button" class="btn btn-ghost" id="toggle-instruction">
-              ❓ Как подключиться?
-            </button>
-          </div>
-
-          <div class="fpv-launch-instruction" id="fpv-instruction" hidden>
-            <h4>📱 Что нужно</h4>
-            <ol>
-              <li>
-                Подключитесь к Wi-Fi <strong>RGB_Route</strong>
-                <span class="hint-badge">2.4 ГГц</span>
-              </li>
-              <li>
-                Пароль:
-                <code>1234567890</code>
-                <button type="button" class="copy-btn" data-copy="1234567890" title="Скопировать">📋</button>
-              </li>
-              <li>Откройте в браузере <code>192.168.100.7</code> — увидите прямой эфир.</li>
-            </ol>
-            <p class="fpv-tip">
-              💡 Если камера не открывается — проверьте, что вы в сети <strong>RGB_Route</strong>,
-              и обновите страницу.
-            </p>
-          </div>
-        </div>
-
-        <!-- Панель быстрых действий — ТОЛЬКО ДЛЯ АДМИНА -->
-        <div class="fpv-quick-actions" id="admin-actions" style="display:none;">
-          <a href="http://192.168.100.7/capture" target="_blank" class="btn">
-            📸 Сделать снимок
-          </a>
-          <a href="http://192.168.100.7:81/status" target="_blank" class="btn">
-            📊 Статус камеры
-          </a>
-        </div>
-
-        <div class="project-block">
-          <div class="project-block-header">
-            <div class="project-block-icon">🧠</div>
-            <div><h3>Что даёт FPV-зрение</h3></div>
-          </div>
-          <ul class="about-list">
-            <li>👁️ Взгляд изнутри — там, где человек не поместится</li>
-            <li>⚡ Реакция в реальном времени — без задержек</li>
-            <li>🎛️ Управление серво — поворот камеры из браузера</li>
-            <li>🗄️ Интеграция с БД — данные и видео в одном интерфейсе</li>
-            <li>💰 Дешевле аналогов — ESP32-S3 вместо IP-камеры</li>
-          </ul>
-        </div>
-
-      </div>
-
-      <!-- ВКЛАДКА 2: КАК ПОДКЛЮЧИТЬСЯ -->
-      <div class="fpv-tab-content" id="tab-connect" hidden>
-
-        <div class="fpv-launch-card">
-          <div class="fpv-launch-icon"></div>
-          <h2>Подключение к камере</h2>
-          <p class="fpv-launch-desc">
-            Пошаговая демонстрация: от Wi-Fi до живой картинки в браузере.
-          </p>
-
-          <video controls preload="metadata" playsinline
-                 style="width:100%; border-radius:12px; margin-top:1rem; background:#000;">
-            <source src="videos/fpv-connect.mp4" type="video/mp4">
-            Ваш браузер не поддерживает видео.
-          </video>
-
-          <div class="fpv-launch-instruction" style="margin-top:1.25rem;">
-            <h4>📱 Что нужно</h4>
-            <ol>
-              <li>Подключитесь к Wi-Fi <strong>RGB_Route</strong> <span class="hint-badge">2.4 ГГц</span></li>
-              <li>Пароль: <code>1234567890</code></li>
-              <li>Откройте <code>192.168.100.7</code> в браузере</li>
-              <li>Управляйте камерой и снимайте кадры</li>
-            </ol>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ВКЛАДКА 3: ДЕМО FPV-ЗРЕНИЯ -->
-      <div class="fpv-tab-content" id="tab-demo" hidden>
-
-        <div class="fpv-launch-card">
-          <div class="fpv-launch-icon"></div>
-          <h2>FPV-зрение в работе</h2>
-          <p class="fpv-launch-desc">
-            Как камера помогает контролировать процесс работы агрегата
-            в реальном времени со стороны (в начальной версии).
-          </p>
-
-          <video controls preload="metadata" playsinline
-                 style="width:100%; border-radius:12px; margin-top:1rem; background:#000;">
-            <source src="videos/fpv-process.mp4" type="video/mp4">
-            Ваш браузер не поддерживает видео.
-          </video>
-        </div>
-
-        <div class="project-block">
-          <div class="project-block-header">
-            <div class="project-block-icon">📋</div>
-            <div><h3>Что показывает запись</h3></div>
-          </div>
-          <ul class="about-list">
-            <li>👁️ Взгляд изнутри агрегата — недоступен человеку</li>
-            <li>🔥 Контроль нагрева и экструзии в реальном времени</li>
-            <li>🎛️ Управление серво — поворот камеры под нужным углом</li>
-            <li>🗄️ Связка «видео + данные» в одном интерфейсе</li>
-          </ul>
-        </div>
-
-      </div>
-
-    </main>
-
-    <!-- ===================== ПРАВАЯ КОЛОНКА: СЕРВО ===================== -->
-    <aside class="fpv-servo-panel" aria-label="Управление серво">
-      <h3>🎛️ Управление серво</h3>
-      <p class="servo-desc">
-        Поворот камеры по горизонтали и вертикали.
-        Работает только при подключении к сети <code>RGB_Route</code>.
-      </p>
-
-      <!-- Статус + текущий угол -->
-      <div class="servo-status offline" id="servo-status">
-        <span><span class="dot"></span><span id="servo-status-text">Не подключено</span></span>
-        <span class="servo-angle" id="servo-angle">—°</span>
-      </div>
-
-      <!-- Джойстик 3×3 -->
-      <div class="servo-joystick" role="group" aria-label="Джойстик управления серво">
-
-        <button type="button" class="servo-btn servo-up"
-                data-dir="up" aria-label="Вверх">
-          ▲<span class="servo-label">Вверх</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-left"
-                data-dir="left" aria-label="Влево">
-          ◀<span class="servo-label">Влево</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-stop"
-                data-dir="stop" aria-label="Стоп">
-          ⏹<span class="servo-label">Стоп</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-right"
-                data-dir="right" aria-label="Вправо">
-          ▶<span class="servo-label">Вправо</span>
-        </button>
-
-        <button type="button" class="servo-btn servo-down"
-                data-dir="down" aria-label="Вниз">
-          ▼<span class="servo-label">Вниз</span>
-        </button>
-
-      </div>
-
-      <!-- Пресеты углов -->
-      <div class="servo-presets">
-        <button type="button" class="servo-preset" data-angle="0">0°</button>
-        <button type="button" class="servo-preset" data-angle="45">45°</button>
-        <button type="button" class="servo-preset" data-angle="90">90°</button>
-        <button type="button" class="servo-preset" data-angle="135">135°</button>
-        <button type="button" class="servo-preset" data-angle="180">180°</button>
-        <button type="button" class="servo-preset" data-angle="center">Центр</button>
-      </div>
-    </aside>
-
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-    // ---- ТАБЫ ----
-    (function() {
-      var tabs = document.querySelectorAll('.fpv-tab');
-      var contents = document.querySelectorAll('.fpv-tab-content');
-      tabs.forEach(function(tab) {
-        tab.addEventListener('click', function() {
-          tabs.forEach(function(t) { t.classList.remove('active'); });
-          contents.forEach(function(c) { c.setAttribute('hidden', ''); });
-          tab.classList.add('active');
-          var target = document.getElementById('tab-' + tab.dataset.tab);
-          if (target) target.removeAttribute('hidden');
-        });
-      });
-    })();
+  <!-- ПРАВАЯ ПАНЕЛЬ: СЕРВО -->
+  <div class="servo-panel">
+    <div class="servo-title">Управление камерой</div>
+    <div class="servo-angle-big" id="angleBig">90°</div>
 
-    // ---- РАСКРЫВАЮЩАЯСЯ ИНСТРУКЦИЯ + КОПИРОВАНИЕ ПАРОЛЯ ----
-    (function() {
-      var toggleBtn = document.getElementById('toggle-instruction');
-      var block     = document.getElementById('fpv-instruction');
-      if (toggleBtn && block) {
-        toggleBtn.addEventListener('click', function() {
-          if (block.hasAttribute('hidden')) {
-            block.removeAttribute('hidden');
-            toggleBtn.textContent = '❌ Скрыть инструкцию';
-          } else {
-            block.setAttribute('hidden', '');
-            toggleBtn.textContent = '❓ Как подключиться?';
-          }
-        });
-      }
+    <div class="joystick">
+      <button class="joy-btn joy-up"    data-dir="-1">▲</button>
+      <button class="joy-btn joy-left"  data-dir="-1">◀</button>
+      <button class="joy-btn joy-center" id="btnHome">90°</button>
+      <button class="joy-btn joy-right" data-dir="+1">▶</button>
+      <button class="joy-btn joy-down"  data-dir="+1">▼</button>
+    </div>
 
-      document.querySelectorAll('.copy-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var text = btn.getAttribute('data-copy');
-          navigator.clipboard.writeText(text).then(function() {
-            var old = btn.textContent;
-            btn.textContent = '✅';
-            setTimeout(function() { btn.textContent = old; }, 1200);
-          });
-        });
-      });
-    })();
+    <div class="joy-presets">
+      <button class="joy-preset" data-angle="0">0°</button>
+      <button class="joy-preset" data-angle="45">45°</button>
+      <button class="joy-preset" data-angle="90">90°</button>
+      <button class="joy-preset" data-angle="135">135°</button>
+      <button class="joy-preset" data-angle="180">180°</button>
+    </div>
+  </div>
 
-    // ---- АВТОРИЗАЦИЯ ----
-    (async function init() {
-      var admin = null;
-      try {
-        if (typeof getAdminUser === 'function') admin = await getAdminUser();
-      } catch(e) {}
+</div>
 
-      var isRealAdmin = admin && admin.email;
+<script>
+// ===== Состояние =====
+var angle = 90;
 
-      var roleEl = document.getElementById('user-role');
-      var logoutBtn = document.getElementById('logout-btn');
-      var adminActions = document.getElementById('admin-actions');
+var angleBig      = document.getElementById('angleBig');
+var angleBigVideo = document.getElementById('angleBigVideo');
+var fpsEl         = document.getElementById('fps');
+var rssiEl        = document.getElementById('rssi');
 
-      if (isRealAdmin) {
-        if (roleEl) roleEl.textContent = '👑 ' + admin.email;
-        document.body.classList.remove('is-guest');
-        document.body.classList.add('is-admin');
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-        if (logoutBtn) {
-          logoutBtn.style.display = 'inline-flex';
-          logoutBtn.addEventListener('click', function() {
-            if (typeof logoutAdmin === 'function') logoutAdmin();
-          });
-        }
+function updateUI(a) {
+  angle = a;
+  if (angleBig)      angleBig.textContent = a + '\u00B0';
+  if (angleBigVideo) angleBigVideo.textContent = a + '\u00B0';
+}
 
-        if (adminActions) adminActions.style.display = 'flex';
+// ===== Отправка на серво =====
+// dir = -1 (влево/вниз), +1 (вправо/вверх)
+function sendStep(dir) {
+  var url;
+  if (dir === -1) url = '/move?dir=left';
+  else            url = '/move?dir=right';
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(d){ updateUI(d.angle); })
+    .catch(function(){});
+}
 
-      } else {
-        if (roleEl) roleEl.textContent = '👀 Гость (только просмотр)';
-        document.body.classList.remove('is-admin');
-        document.body.classList.add('is-guest');
+// Пресет — сразу на угол
+function sendPreset(a) {
+  // Через /move двигаем по 1°, но у нас нет прямого эндпоинта.
+  // Используем /jump с шагом 10 и /move для остатка — но проще сделать прямые
+  // запросы: сначала добегаем jump'ами, потом точной подгонкой.
+  // Всё решается на сервере — добавим /set?angle=.
+  // Пока fallback: жать до нужного угла не будем, отправим /set (см. main.ino)
+  fetch('/set?angle=' + a)
+    .then(function(r){ return r.json(); })
+    .then(function(d){ updateUI(d.angle); })
+    .catch(function(){});
+}
 
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        if (adminActions) adminActions.style.display = 'none';
-      }
-    })();
+function sendHome() {
+  fetch('/home')
+    .then(function(r){ return r.json(); })
+    .then(function(d){ updateUI(d.angle); })
+    .catch(function(){});
+}
 
-    // ============================================================
-    // УПРАВЛЕНИЕ СЕРВО
-    // ============================================================
-    (function() {
-      var ESP32_BASE = 'http://192.168.100.7';   // адрес ESP32-S3
-      var statusEl     = document.getElementById('servo-status');
-      var statusTextEl = document.getElementById('servo-status-text');
-      var angleEl      = document.getElementById('servo-angle');
+// ===== Кнопки джойстика =====
+var holdTimer = null;
+var holdBtn = null;
 
-      var state = {
-        horizontal: 90,   // 0..180
-        vertical:   90,   // 0..180
-        online:     false
-      };
+function startHold(btn, dir) {
+  if (btn) btn.classList.add('on');
+  holdBtn = btn;
+  sendStep(dir);
+  stopHold();
+  holdTimer = setInterval(function(){ sendStep(dir); }, 60);
+}
+function stopHold() {
+  if (holdTimer) { clearInterval(holdTimer); holdTimer = null; }
+  if (holdBtn)   { holdBtn.classList.remove('on'); holdBtn = null; }
+}
 
-      // ---- Отправка команды на ESP32 ----
-      // Ожидаемый эндпоинт на прошивке:
-      //   /servo?h=90&v=90   → устанавливает углы
-      //   /servo?dir=up      → шаг вверх
-      //   /servo?dir=stop    → остановка
-      // При необходимости замените URL на свой.
-      function sendServoCommand(params) {
-        var url = ESP32_BASE + '/servo?' + new URLSearchParams(params).toString();
+document.querySelectorAll('.joy-btn[data-dir]').forEach(function(btn){
+  var dir = parseInt(btn.dataset.dir, 10);
+  btn.addEventListener('mousedown',  function(e){ e.preventDefault(); startHold(btn, dir); });
+  btn.addEventListener('mouseup',    stopHold);
+  btn.addEventListener('mouseleave', stopHold);
+  btn.addEventListener('touchstart', function(e){ e.preventDefault(); startHold(btn, dir); }, {passive:false});
+  btn.addEventListener('touchend',   function(e){ e.preventDefault(); stopHold(); }, {passive:false});
+  btn.addEventListener('touchcancel', stopHold);
+});
 
-        // fetch с таймаутом, чтобы не «висло» при отсутствии сети
-        var controller = new AbortController();
-        var timer = setTimeout(function() { controller.abort(); }, 1500);
+document.getElementById('btnHome').addEventListener('click', sendHome);
 
-        return fetch(url, { mode: 'no-cors', signal: controller.signal })
-          .then(function() {
-            clearTimeout(timer);
-            setOnline(true);
-            return true;
-          })
-          .catch(function() {
-            clearTimeout(timer);
-            setOnline(false);
-            return false;
-          });
-      }
+document.querySelectorAll('.joy-preset').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    sendPreset(parseInt(btn.dataset.angle, 10));
+  });
+});
 
-      function setOnline(online) {
-        state.online = online;
-        statusEl.classList.toggle('online', online);
-        statusEl.classList.toggle('offline', !online);
-        statusTextEl.textContent = online ? 'Подключено' : 'Не подключено';
-      }
+// Клавиатура
+document.addEventListener('keydown', function(e){
+  if (e.repeat) return;
+  if (e.key === 'ArrowLeft')  sendStep(-1);
+  if (e.key === 'ArrowRight') sendStep(+1);
+  if (e.key === 'Home')       sendHome();
+});
 
-      function updateAngleUI() {
-        angleEl.textContent = state.horizontal + '° / ' + state.vertical + '°';
-      }
+// ===== Поллинг статуса =====
+fetch('/angle').then(function(r){ return r.json(); }).then(function(d){ updateUI(d.angle); }).catch(function(){});
 
-      // ---- Обработка кнопок-джойстика ----
-      document.querySelectorAll('.servo-btn').forEach(function(btn) {
-        var dir = btn.dataset.dir;
-
-        function press(e) {
-          e.preventDefault();
-          btn.classList.add('is-active');
-
-          if (dir === 'stop') {
-            sendServoCommand({ dir: 'stop' });
-            return;
-          }
-
-          // локально меняем угол и отправляем на ESP32
-          var step = 10;
-          if (dir === 'left')  state.horizontal = Math.max(0,   state.horizontal - step);
-          if (dir === 'right') state.horizontal = Math.min(180, state.horizontal + step);
-          if (dir === 'up')    state.vertical   = Math.min(180, state.vertical   + step);
-          if (dir === 'down')  state.vertical   = Math.max(0,   state.vertical   - step);
-
-          updateAngleUI();
-          sendServoCommand({ h: state.horizontal, v: state.vertical });
-        }
-
-        function release() {
-          btn.classList.remove('is-active');
-        }
-
-        btn.addEventListener('mousedown', press);
-        btn.addEventListener('mouseup', release);
-        btn.addEventListener('mouseleave', release);
-        btn.addEventListener('touchstart', press, { passive: false });
-        btn.addEventListener('touchend', release);
-        btn.addEventListener('touchcancel', release);
-      });
-
-      // ---- Пресеты углов ----
-      document.querySelectorAll('.servo-preset').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var val = btn.dataset.angle;
-          if (val === 'center') {
-            state.horizontal = 90;
-            state.vertical   = 90;
-          } else {
-            state.horizontal = parseInt(val, 10);
-          }
-          updateAngleUI();
-          sendServoCommand({ h: state.horizontal, v: state.vertical });
-        });
-      });
-
-      // ---- Проверка связи при загрузке ----
-      (function ping() {
-        var controller = new AbortController();
-        var timer = setTimeout(function() { controller.abort(); }, 1500);
-
-        fetch(ESP32_BASE + '/status', { mode: 'no-cors', signal: controller.signal })
-          .then(function() { clearTimeout(timer); setOnline(true); })
-          .catch(function() { clearTimeout(timer); setOnline(false); });
-      })();
-
-      updateAngleUI();
-
-      // Экспорт в глобальную область — чтобы можно было вызвать из консоли
-      window.ServoControl = {
-        set: function(h, v) {
-          state.horizontal = Math.min(180, Math.max(0, h));
-          state.vertical   = Math.min(180, Math.max(0, v));
-          updateAngleUI();
-          return sendServoCommand({ h: state.horizontal, v: state.vertical });
-        },
-        state: state
-      };
-    })();
-  </script>
+setInterval(function(){
+  fetch('/status')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (j.fps !== undefined && fpsEl) fpsEl.textContent = j.fps;
+      if (j.clients !== undefined && rssiEl) rssiEl.textContent = j.clients + ' кл.';
+    })
+    .catch(function(){});
+}, 1500);
+</script>
 
 </body>
-</html>
+</html>)CAMHTML";
