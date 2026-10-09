@@ -23,15 +23,17 @@
       padding: 1.5rem;
     }
 
-    /* Правая колонка «прилипает» при скролле */
+    /* Правая колонка «прилипает» при скролле и сливается с фоном */
     .fpv-servo-panel {
       position: sticky;
       top: 1.5rem;
-      background: var(--card-bg, #fff);
-      border: 1px solid var(--border-color, #e5e7eb);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       padding: 1.25rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
     }
 
     .fpv-servo-panel h3 {
@@ -40,13 +42,22 @@
       display: flex;
       align-items: center;
       gap: .5rem;
+      color: #e5e7eb;
     }
 
     .fpv-servo-panel .servo-desc {
       margin: 0 0 1rem;
       font-size: .82rem;
-      color: var(--text-muted, #6b7280);
-      line-height: 1.4;
+      color: #9ca3af;
+      line-height: 1.45;
+    }
+
+    .fpv-servo-panel code {
+      background: rgba(255, 255, 255, 0.08);
+      color: #6ee7b7;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: .78rem;
     }
 
     /* ===== ДЖОЙСТИК ===== */
@@ -66,35 +77,32 @@
       align-items: center;
       justify-content: center;
       gap: .15rem;
-      border: 1px solid var(--border-color, #e5e7eb);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      background: var(--btn-bg, #f9fafb);
-      color: var(--text-color, #111827);
+      background: rgba(255, 255, 255, 0.05);
+      color: #e5e7eb;
       font-family: inherit;
       font-size: 1.4rem;
       font-weight: 600;
       cursor: pointer;
       user-select: none;
-      transition: background .15s, transform .1s, box-shadow .15s;
+      transition: background .15s, transform .1s, box-shadow .15s, border-color .15s;
       -webkit-tap-highlight-color: transparent;
     }
 
     .servo-btn:hover {
-      background: var(--btn-hover, #f3f4f6);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(110, 231, 183, 0.4);
+      box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
     }
 
     .servo-btn:active,
     .servo-btn.is-active {
-      background: var(--accent, #10b981);
+      background: #10b981;
+      border-color: #10b981;
       color: #fff;
       transform: scale(.95);
-    }
-
-    .servo-btn:disabled {
-      opacity: .4;
-      cursor: not-allowed;
-      transform: none;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
     }
 
     .servo-btn .servo-label {
@@ -105,56 +113,28 @@
       opacity: .7;
     }
 
-    /* Позиции в сетке 3×3 */
     .servo-up    { grid-area: 1 / 2 / 2 / 3; }
     .servo-left  { grid-area: 2 / 1 / 3 / 2; }
     .servo-stop  { grid-area: 2 / 2 / 3 / 3; font-size: 1rem; }
     .servo-right { grid-area: 2 / 3 / 3 / 4; }
     .servo-down  { grid-area: 3 / 2 / 4 / 3; }
 
-    /* Центральная кнопка «стоп» — другого цвета */
+    /* Центральная кнопка «стоп» */
     .servo-stop {
-      background: #fee2e2;
-      color: #b91c1c;
-      border-color: #fecaca;
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.3);
     }
     .servo-stop:hover {
-      background: #fecaca;
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.5);
     }
     .servo-stop:active,
     .servo-stop.is-active {
       background: #ef4444;
+      border-color: #ef4444;
       color: #fff;
-    }
-
-    /* ===== СТАТУС И УГОЛ ===== */
-    .servo-status {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .5rem;
-      font-size: .8rem;
-      padding: .5rem .75rem;
-      border-radius: 10px;
-      background: var(--surface-2, #f3f4f6);
-      margin-bottom: .75rem;
-    }
-
-    .servo-status .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #9ca3af;
-      display: inline-block;
-      margin-right: .35rem;
-    }
-    .servo-status.online .dot { background: #10b981; }
-    .servo-status.offline .dot { background: #ef4444; }
-
-    .servo-angle {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: .95rem;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
     }
 
     /* ===== ПРЕСЕТЫ ===== */
@@ -167,17 +147,28 @@
 
     .servo-preset {
       padding: .45rem .25rem;
-      border: 1px solid var(--border-color, #e5e7eb);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      background: var(--btn-bg, #f9fafb);
+      background: rgba(255, 255, 255, 0.05);
+      color: #d1d5db;
       font-family: 'JetBrains Mono', monospace;
       font-size: .72rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background .15s;
+      transition: background .15s, border-color .15s, color .15s;
     }
-    .servo-preset:hover { background: var(--btn-hover, #f3f4f6); }
-    .servo-preset:active { background: var(--accent, #10b981); color: #fff; }
+
+    .servo-preset:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(110, 231, 183, 0.4);
+      color: #6ee7b7;
+    }
+
+    .servo-preset:active {
+      background: #10b981;
+      border-color: #10b981;
+      color: #fff;
+    }
 
     /* ===== АДАПТИВ ===== */
     @media (max-width: 900px) {
@@ -187,7 +178,7 @@
       }
       .fpv-servo-panel {
         position: static;
-        order: -1; /* на мобильных управление сверху */
+        order: -1;
       }
       .servo-joystick {
         max-width: 200px;
@@ -370,12 +361,6 @@
         Работает только при подключении к сети <code>RGB_Route</code>.
       </p>
 
-      <!-- Статус + текущий угол -->
-      <div class="servo-status offline" id="servo-status">
-        <span><span class="dot"></span><span id="servo-status-text">Не подключено</span></span>
-        <span class="servo-angle" id="servo-angle">—°</span>
-      </div>
-
       <!-- Джойстик 3×3 -->
       <div class="servo-joystick" role="group" aria-label="Джойстик управления серво">
 
@@ -508,14 +493,10 @@
     // ============================================================
     (function() {
       var ESP32_BASE = 'http://192.168.100.7';   // адрес ESP32-S3
-      var statusEl     = document.getElementById('servo-status');
-      var statusTextEl = document.getElementById('servo-status-text');
-      var angleEl      = document.getElementById('servo-angle');
 
       var state = {
         horizontal: 90,   // 0..180
-        vertical:   90,   // 0..180
-        online:     false
+        vertical:   90    // 0..180
       };
 
       // ---- Отправка команды на ESP32 ----
@@ -523,36 +504,15 @@
       //   /servo?h=90&v=90   → устанавливает углы
       //   /servo?dir=up      → шаг вверх
       //   /servo?dir=stop    → остановка
-      // При необходимости замените URL на свой.
       function sendServoCommand(params) {
         var url = ESP32_BASE + '/servo?' + new URLSearchParams(params).toString();
 
-        // fetch с таймаутом, чтобы не «висло» при отсутствии сети
         var controller = new AbortController();
         var timer = setTimeout(function() { controller.abort(); }, 1500);
 
         return fetch(url, { mode: 'no-cors', signal: controller.signal })
-          .then(function() {
-            clearTimeout(timer);
-            setOnline(true);
-            return true;
-          })
-          .catch(function() {
-            clearTimeout(timer);
-            setOnline(false);
-            return false;
-          });
-      }
-
-      function setOnline(online) {
-        state.online = online;
-        statusEl.classList.toggle('online', online);
-        statusEl.classList.toggle('offline', !online);
-        statusTextEl.textContent = online ? 'Подключено' : 'Не подключено';
-      }
-
-      function updateAngleUI() {
-        angleEl.textContent = state.horizontal + '° / ' + state.vertical + '°';
+          .then(function() { clearTimeout(timer); return true; })
+          .catch(function() { clearTimeout(timer); return false; });
       }
 
       // ---- Обработка кнопок-джойстика ----
@@ -568,14 +528,12 @@
             return;
           }
 
-          // локально меняем угол и отправляем на ESP32
           var step = 10;
           if (dir === 'left')  state.horizontal = Math.max(0,   state.horizontal - step);
           if (dir === 'right') state.horizontal = Math.min(180, state.horizontal + step);
           if (dir === 'up')    state.vertical   = Math.min(180, state.vertical   + step);
           if (dir === 'down')  state.vertical   = Math.max(0,   state.vertical   - step);
 
-          updateAngleUI();
           sendServoCommand({ h: state.horizontal, v: state.vertical });
         }
 
@@ -601,29 +559,15 @@
           } else {
             state.horizontal = parseInt(val, 10);
           }
-          updateAngleUI();
           sendServoCommand({ h: state.horizontal, v: state.vertical });
         });
       });
-
-      // ---- Проверка связи при загрузке ----
-      (function ping() {
-        var controller = new AbortController();
-        var timer = setTimeout(function() { controller.abort(); }, 1500);
-
-        fetch(ESP32_BASE + '/status', { mode: 'no-cors', signal: controller.signal })
-          .then(function() { clearTimeout(timer); setOnline(true); })
-          .catch(function() { clearTimeout(timer); setOnline(false); });
-      })();
-
-      updateAngleUI();
 
       // Экспорт в глобальную область — чтобы можно было вызвать из консоли
       window.ServoControl = {
         set: function(h, v) {
           state.horizontal = Math.min(180, Math.max(0, h));
           state.vertical   = Math.min(180, Math.max(0, v));
-          updateAngleUI();
           return sendServoCommand({ h: state.horizontal, v: state.vertical });
         },
         state: state
